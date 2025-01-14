@@ -1,5 +1,5 @@
 import { databases } from '@/lib/appwrite';
-import { GameState } from '@/lib/game';
+import { GameState } from '@/lib/types';
 import GameClient from './game-client';
 
 export default async function GamePage({ params, searchParams }: { 
