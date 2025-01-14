@@ -6,22 +6,23 @@ export interface GameState {
     size: number;
     status: GameStatus;
     lastMove: number;
-    history: Move[];
-  }
+    rematchRequested: Player | null;
+    rematchAccepted: boolean;
+}
   
-  export type Player = 'X' | 'O';
-  export type GameStatus = 'waiting' | 'playing' | 'finished';
+export type Player = 'X' | 'O';
+export type GameStatus = 'waiting' | 'playing' | 'finished' | 'declined';
   
-  export interface Move {
+export interface Move {
     player: Player;
     position: number;
-  }
+}
   
-  export interface AppwriteConfig {
+export interface AppwriteConfig {
     endpoint: string;
     projectId: string;
     databaseId: string;
     collectionId: string;
-  }
+}
   
   

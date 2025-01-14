@@ -4,6 +4,8 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: { unoptimized: true },
+  basePath: '/tic-tac',
+  reactStrictMode: true,
 };
 
 module.exports = nextConfig;

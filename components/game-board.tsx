@@ -7,8 +7,9 @@ interface GameBoardProps {
   board: string[];
   size: number;
   onMove: (position: number) => void;
-  lastMove: number;
+  lastMove: number | null;
   winner: string | null;
+  disabled?: boolean;
 }
 
 export default function GameBoard({ board, size, onMove, lastMove, winner }: GameBoardProps) {
@@ -30,6 +31,11 @@ export default function GameBoard({ board, size, onMove, lastMove, winner }: Gam
     }
   };
 
+  const handleCellClick = (index: number) => {
+    console.log(`Cell ${index} clicked`);
+    onMove(index);
+  };
+
   return (
     <div
       className="grid gap-2 mx-auto"
@@ -49,7 +55,7 @@ export default function GameBoard({ board, size, onMove, lastMove, winner }: Gam
             lastMove === index && "border-primary"
           )}
           disabled={!!cell || !!winner}
-          onClick={() => onMove(index)}
+          onClick={() => handleCellClick(index)}
           whileHover={{ scale: cell ? 1 : 1.05 }}
           whileTap={{ scale: cell ? 1 : 0.95 }}
           initial={{ opacity: 0, scale: 0.8 }}
