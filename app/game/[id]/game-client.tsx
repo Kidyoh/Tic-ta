@@ -105,7 +105,7 @@ export default function GameClient({
 
     const unsubscribe = databases.client.subscribe(
       `databases.${appwriteConfig.databaseId}.collections.${appwriteConfig.collectionId}.documents.${id}`,
-      (response) => {
+      async (response) => {
         const newGameState = response.payload as GameState;
         setGameState(newGameState);
 
@@ -115,24 +115,27 @@ export default function GameClient({
           !newGameState.winner &&
           !isProcessing
         ) {
+          console.log('AI turn started');
           setIsProcessing(true);
-          const aiMove = calculateAIMove(newGameState);
-          if (aiMove !== -1) {
-            setTimeout(async () => {
-              try {
-                await makeMove(id, aiMove, 'O', newGameState);
-              } catch (error) {
-                console.error('AI move failed:', error);
-                toast({
-                  title: 'AI Move Failed',
-                  description: 'There was an error during the AI move.',
-                  variant: 'destructive',
-                });
-              } finally {
-                setIsProcessing(false);
-              }
-            }, 500);
-          } else {
+          try {
+            console.log('Calculating AI move for state:', newGameState);
+            const aiMove = await calculateAIMove(newGameState);
+            console.log('AI selected move:', aiMove);
+            
+            if (aiMove !== -1) {
+              console.log('Making AI move:', aiMove);
+              await makeMove(id, aiMove, 'O', newGameState);
+              console.log('AI move completed');
+            }
+          } catch (error) {
+            console.error('AI move execution error:', error);
+            toast({
+              title: 'AI Move Failed',
+              description: 'There was an error during the AI move.',
+              variant: 'destructive',
+            });
+          } finally {
+            console.log('AI turn completed');
             setIsProcessing(false);
           }
         }

@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@azure/core-auth": "^1.9.0",
+    "@azure/openai": "^2.0.0",
     "@hookform/resolvers": "^3.9.0",
     "@next/swc-wasm-nodejs": "13.5.1",
     "@radix-ui/react-accordion": "^1.2.0",
@@ -55,6 +57,7 @@
     "lucide-react": "^0.446.0",
     "next": "13.5.1",
     "next-themes": "^0.3.0",
+    "openai": "^4.78.1",
     "postcss": "8.4.30",
     "react": "18.2.0",
     "react-confetti": "^6.1.0",

@@ -33,3 +33,10 @@ export const GAME_SCHEMA = {
   STATUS: 'status',
   LAST_MOVE: 'lastMove',
 } as const;
+
+export const azureConfig = {
+  endpoint: process.env.NEXT_PUBLIC_AZURE_ENDPOINT?.trim(),
+  apiKey: process.env.AZURE_API_KEY?.trim(),
+  deploymentName: process.env.AZURE_DEPLOYMENT_NAME?.trim(),
+  apiVersion: '2023-12-01-preview'
+};

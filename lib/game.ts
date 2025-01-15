@@ -3,6 +3,51 @@ import { databases } from './appwrite';
 import { appwriteConfig } from './config';
 import { Player, GameState } from './types';
 
+function getFallbackMove(gameState: GameState): number {
+  const board = gameState.board;
+  
+  // First move - take center
+  if (board.every(cell => cell === '')) {
+    return Math.floor(board.length / 2);
+  }
+
+  // Try to find a winning move
+  for (let i = 0; i < board.length; i++) {
+    if (board[i] === '') {
+      const testBoard = [...board];
+      testBoard[i] = 'O';
+      if (checkWinner(testBoard, gameState.size) === 'O') {
+        return i;
+      }
+    }
+  }
+
+  // Try to block opponent's winning move
+  for (let i = 0; i < board.length; i++) {
+    if (board[i] === '') {
+      const testBoard = [...board];
+      testBoard[i] = 'X';
+      if (checkWinner(testBoard, gameState.size) === 'X') {
+        return i;
+      }
+    }
+  }
+
+  // Take any available corner
+  const corners = [0, gameState.size - 1, gameState.size * (gameState.size - 1), gameState.size * gameState.size - 1];
+  const availableCorners = corners.filter(c => board[c] === '');
+  if (availableCorners.length > 0) {
+    return availableCorners[Math.floor(Math.random() * availableCorners.length)];
+  }
+
+  // Take any available space
+  const availableMoves = board
+    .map((cell, index) => cell === '' ? index : -1)
+    .filter(index => index !== -1);
+  
+  return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+}
+
 export const createGame = async (size: number = 3): Promise<string> => {
   try {
     const board = Array(size * size).fill('');
@@ -111,38 +156,37 @@ const checkWinner = (board: string[], size: number): string | null => {
   return null;
 };
 
-export const calculateAIMove = (gameState: GameState): number => {
-  const board = gameState.board;
-  
-  // First move optimization - if AI goes first, take center
-  if (board.every(cell => cell === '')) {
-    return Math.floor(board.length / 2);
+export const calculateAIMove = async (gameState: GameState): Promise<number> => {
+  try {
+    console.log('Sending game state to AI:', gameState);
+
+    const response = await fetch('/tic-tac/api/ai-move', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(gameState),
+    });
+
+    console.log('AI API response status:', response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Failed to get AI move: ${errorData.details || response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('AI API response data:', data);
+
+    if (typeof data.move !== 'number') {
+      throw new Error('Invalid move received from AI');
+    }
+
+    return data.move;
+  } catch (error) {
+    console.error('AI calculation error:', error);
+    return getFallbackMove(gameState);
   }
-
-  // Check for immediate winning move
-  const winningMove = findWinningMove(board, 'O', gameState.size);
-  if (winningMove !== -1) return winningMove;
-
-  // Block opponent's winning move
-  const blockingMove = findWinningMove(board, 'X', gameState.size);
-  if (blockingMove !== -1) return blockingMove;
-
-  // Strategic move priorities
-  const moves = getStrategicMoves(board, gameState.size);
-  if (moves.length > 0) {
-    return moves[0];
-  }
-
-  // Take any available space
-  const availableMoves = board
-    .map((cell, index) => cell === '' ? index : -1)
-    .filter(index => index !== -1);
-  
-  if (availableMoves.length > 0) {
-    return availableMoves[Math.floor(Math.random() * availableMoves.length)];
-  }
-
-  return -1;
 };
 
 function findWinningMove(board: string[], player: string, size: number): number {
