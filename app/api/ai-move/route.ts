@@ -1,12 +1,14 @@
-import OpenAI from 'openai';
+import {AzureOpenAI} from 'openai';
 import { GameState } from '@/lib/types';
 import { NextResponse } from 'next/server';
 import { azureConfig } from '@/lib/config';
 
 // Initialize OpenAI with Azure configuration
-const openai = new OpenAI({
+const openai = new AzureOpenAI({
   apiKey: process.env.AZURE_API_KEY,
   baseURL: process.env.NEXT_PUBLIC_AZURE_ENDPOINT,
+  apiVersion: process.env.OPENAI_API_VERSION,
+  deployment: process.env.AZURE_DEPLOYMENT_NAME,
 });
 
 async function getAIMove(gameState: GameState): Promise<number> {
@@ -77,7 +79,7 @@ Board positions are numbered 0-8 from left to right, top to bottom:
 ---------
 6 | 7 | 8
 
-You are playing as 'O'. Choose the best move position number.
+You are playing as 'O'. Choose the best move position number. and so that I wont win. 
 Available positions are: ${gameState.board.map((cell, i) => cell === '' ? i : null).filter(i => i !== null).join(', ')}
 
 Return only the number of your chosen position.`;
