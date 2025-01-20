@@ -109,37 +109,7 @@ export default function GameClient({
         const newGameState = response.payload as GameState;
         setGameState(newGameState);
 
-        if (
-          mode === 'ai' &&
-          newGameState.currentPlayer === 'O' &&
-          !newGameState.winner &&
-          !isProcessing
-        ) {
-          console.log('AI turn started');
-          setIsProcessing(true);
-          try {
-            console.log('Calculating AI move for state:', newGameState);
-            const aiMove = await calculateAIMove(newGameState);
-            console.log('AI selected move:', aiMove);
-            
-            if (aiMove !== -1) {
-              console.log('Making AI move:', aiMove);
-              await makeMove(id, aiMove, 'O', newGameState);
-              console.log('AI move completed');
-            }
-          } catch (error) {
-            console.error('AI move execution error:', error);
-            toast({
-              title: 'AI Move Failed',
-              description: 'There was an error during the AI move.',
-              variant: 'destructive',
-            });
-          } finally {
-            console.log('AI turn completed');
-            setIsProcessing(false);
-          }
-        }
-
+        // Handle only rematch-related updates
         if (newGameState.rematchRequested && newGameState.rematchRequested !== player) {
           setShowRematchDialog(true);
           setRematchDeclined(false);
@@ -174,7 +144,7 @@ export default function GameClient({
     return () => {
       unsubscribe();
     };
-  }, [id, mode, initialGameState, initialPlayer, isProcessing, toast, router, player]);
+  }, [id, mode, initialGameState, initialPlayer, toast, router, player]);
 
   useEffect(() => {
     if (gameState?.status === 'waiting' && mode === 'multiplayer' && player === 'X') {
@@ -191,43 +161,37 @@ export default function GameClient({
     if (!gameState || !id || isProcessing || gameState.winner) return;
 
     setShowStartPrompt(false);
-
-    const isValidTurn = mode === 'ai'
-      ? player === 'X' && gameState.currentPlayer === 'X'
-      : gameState.currentPlayer === player;
-
-    if (!isValidTurn) {
-      toast({
-        title: 'Not your turn',
-        description: mode === 'ai'
-          ? 'Please wait for the AI to make its move.'
-          : 'Please wait for your opponent to make a move.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (gameState.board[position] !== '') {
-      toast({
-        title: 'Invalid Move',
-        description: 'This position is already taken.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setIsProcessing(true);
+
     try {
+      // Handle player move
       const moveSuccessful = await makeMove(id, position, player, gameState);
-      if (moveSuccessful) {
-        setGameState(prevState => ({
-          ...prevState!,
-          board: prevState!.board.map((cell, index) =>
-            index === position ? player : cell
-          ),
-          currentPlayer: player === 'X' ? 'O' : 'X',
+      if (moveSuccessful && mode === 'ai') {
+        // Immediately calculate and make AI move
+        console.log('Calculating AI move immediately');
+        const newBoard = [...gameState.board];
+        newBoard[position] = 'X';
+        
+        const aiGameState: GameState = {
+          ...gameState,
+          board: newBoard,
+          currentPlayer: 'O' as const,
           lastMove: position,
-        }));
+          id: gameState.id,
+          winner: gameState.winner,
+          size: gameState.size,
+          status: gameState.status,
+          rematchRequested: gameState.rematchRequested,
+          rematchAccepted: gameState.rematchAccepted
+        };
+
+        const aiMove = await calculateAIMove(aiGameState);
+        console.log('AI selected move:', aiMove);
+        
+        if (aiMove !== -1) {
+          await makeMove(id, aiMove, 'O', aiGameState);
+          console.log('AI move completed');
+        }
       }
     } catch (error) {
       console.error('Error making move:', error);
@@ -240,6 +204,7 @@ export default function GameClient({
       setIsProcessing(false);
     }
 
+    // Handle multiplayer share prompt
     if (mode === 'multiplayer' && player === 'X' && gameState.board.every(cell => cell === '')) {
       setShowSharePrompt(true);
       toast({
