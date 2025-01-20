@@ -68,22 +68,39 @@ async function getAIMove(gameState: GameState): Promise<number> {
 
 function createGamePrompt(gameState: GameState): string {
   const boardDisplay = formatBoardForPrompt(gameState.board, gameState.size);
+  const availablePositions = gameState.board
+    .map((cell, i) => (cell === '' ? i : null))
+    .filter((i) => i !== null)
+    .join(', ');
+
   return `
+You are playing a Tic Tac Toe game. Your goal is to play as 'O' and make the best move to:
+1. Prevent your opponent ('X') from winning by blocking any immediate threats.
+2. Position yourself for a win in future moves if blocking is not required.
+
 Current Tic Tac Toe board state:
 ${boardDisplay}
 
-Board positions are numbered 0-8 from left to right, top to bottom:
+Board positions are numbered from 0 to 8, as follows:
 0 | 1 | 2
 ---------
 3 | 4 | 5
 ---------
 6 | 7 | 8
 
-You are playing as 'O'. Choose the best move position number. and so that I wont win. 
-Available positions are: ${gameState.board.map((cell, i) => cell === '' ? i : null).filter(i => i !== null).join(', ')}
+Rules:
+1. You are 'O', and your opponent is 'X'.
+2. The game ends when either player gets three in a row (horizontally, vertically, or diagonally) or when the board is full.
+3. Always prioritize blocking 'X' from winning over other moves.
 
-Return only the number of your chosen position.`;
+Available positions for your next move: ${availablePositions}
+
+Important:
+- Return only the number of your chosen position (e.g., 4). Do not include any additional text, explanations, or formatting in your response.
+- Always block 'X' if they have two marks in a row, even if it means you miss a winning move.
+`;
 }
+
 
 function formatBoardForPrompt(board: string[], size: number): string {
   let result = '';
