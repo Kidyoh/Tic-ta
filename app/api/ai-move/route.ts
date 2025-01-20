@@ -81,7 +81,7 @@ You are playing a Tic Tac Toe game. Your goal is to play as 'O' and make the bes
 Current Tic Tac Toe board state:
 ${boardDisplay}
 
-Board positions are numbered from 0 to 8, as follows:
+Board positions are numbered from 0 to 8, as follows and it is an index of the board array:
 0 | 1 | 2
 ---------
 3 | 4 | 5
