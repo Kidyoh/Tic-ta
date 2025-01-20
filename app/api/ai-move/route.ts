@@ -90,7 +90,7 @@ ${boardPositions}
 
 Rules:
 1. You are 'O', and your opponent is 'X'.
-2. The game ends when either player gets three in a row (horizontally, vertically, or diagonally) or when the board is full.
+2. The game ends when either player gets ${gameState.size} in a row (horizontally, vertically, or diagonally) or when the board is full.
 3. Always prioritize blocking 'X' from winning over other moves.
 
 Available positions for your next move: ${availablePositions}
