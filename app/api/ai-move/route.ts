@@ -73,6 +73,10 @@ function createGamePrompt(gameState: GameState): string {
     .filter((i) => i !== null)
     .join(', ');
 
+  const boardPositions = Array.from({ length: gameState.size }, (_, i) =>
+    Array.from({ length: gameState.size }, (_, j) => i * gameState.size + j).join(' | ')
+  ).join('\n' + '-'.repeat(gameState.size * 2 - 1) + '\n');
+
   return `
 You are playing a Tic Tac Toe game. Your goal is to play as 'O' and make the best move to:
 1. Prevent your opponent ('X') from winning by blocking any immediate threats.
@@ -81,12 +85,8 @@ You are playing a Tic Tac Toe game. Your goal is to play as 'O' and make the bes
 Current Tic Tac Toe board state:
 ${boardDisplay}
 
-Board positions are numbered from 0 to 8, as follows and it is an index of the board array:
-0 | 1 | 2
----------
-3 | 4 | 5
----------
-6 | 7 | 8
+Board positions are numbered from 0 to ${gameState.board.length - 1}, as follows and it is an index of the board array:
+${boardPositions}
 
 Rules:
 1. You are 'O', and your opponent is 'X'.
